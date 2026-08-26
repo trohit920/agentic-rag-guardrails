@@ -1,0 +1,48 @@
+# agentic-rag-guardrails - dependencies (all models run locally; no paid APIs)
+#
+# IMPORTANT: install PyTorch FIRST from the CUDA index matching your system,
+# then install this file. For CPU-only, use the default PyPI torch wheel.
+#   pip install torch --index-url https://download.pytorch.org/whl/cu126
+#   pip install -r requirements.txt
+
+# --- Deep learning / models ---
+transformers==5.14.1
+accelerate
+bitsandbytes                  # 4-bit (NF4) loading of Phi-3-mini; needs Windows >=0.43
+sentence-transformers         # bge-small embeddings
+huggingface_hub[hf_xet]
+sentencepiece                 # required by the DeBERTa-v3 NLI tokenizer
+protobuf                      # required by the DeBERTa-v3 NLI tokenizer
+
+# --- Agent / RAG stack ---
+langgraph                     # agent orchestration
+langchain-core                # graph state / message primitives
+chromadb                      # local persistent vector store
+rank-bm25                     # lexical scoring for hybrid retrieval
+
+# --- Document processing ---
+pypdf                         # PDF text extraction
+datasets                      # optional: pulling a public financial corpus
+
+# --- API layer ---
+fastapi
+uvicorn[standard]
+pydantic
+python-multipart              # file upload on /ingest
+
+# --- Scientific stack ---
+numpy
+pandas
+scipy
+scikit-learn
+
+# --- Visualization ---
+matplotlib
+seaborn
+
+# --- Notebook / tooling ---
+jupyter
+nbformat
+ipykernel
+pytest
+ruff

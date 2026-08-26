@@ -1,0 +1,94 @@
+{
+  "documents": [
+    {
+      "doc_id": "expense-travel-policy",
+      "title": "Expense and Travel Reimbursement Policy",
+      "department": "Finance",
+      "sensitivity": "internal",
+      "owner": "cfo",
+      "effective_date": "2025-01-01",
+      "text": "Purpose. This policy defines how employees are reimbursed for business travel and related expenses. It applies to all full-time and part-time employees who incur approved business costs.\n\nMeal allowances. The daily meal allowance for domestic travel is USD 60 per day. For international travel the daily meal allowance is USD 90 per day. Allowances cover breakfast, lunch, and dinner and are not paid in addition to meals already provided at a conference or hotel.\n\nAir travel. Employees must book economy class for all flights under six hours in duration. Business class may be approved by a director for flights longer than six hours. Tickets should be booked at least fourteen days in advance where possible to reduce cost.\n\nLodging. Hotel costs are capped at USD 200 per night for domestic travel and USD 280 per night for international travel. Costs above the cap require prior written approval from the employee's manager.\n\nReceipts and submission. Original receipts are required for any single expense above USD 25. Expense reports must be submitted through the finance portal within thirty days of the trip end date. Reimbursement is paid within thirty days of an approved submission. Expenses submitted more than sixty days after the trip may be rejected."
+    },
+    {
+      "doc_id": "information-security-policy",
+      "title": "Information Security Policy",
+      "department": "IT Security",
+      "sensitivity": "internal",
+      "owner": "ciso",
+      "effective_date": "2025-02-15",
+      "text": "Scope. This policy establishes the baseline security controls that protect company and customer data across all systems and devices.\n\nPasswords and authentication. Account passwords must be a minimum of fourteen characters and must be rotated every ninety days. Multi-factor authentication is mandatory for all systems that access customer data or financial records. Reusing any of the previous five passwords is prohibited.\n\nDevice security. All company laptops must have full-disk encryption enabled before they are issued. Personal USB storage devices are prohibited on company endpoints. Screens must lock automatically after ten minutes of inactivity.\n\nIncident reporting. Suspected security incidents must be reported to the security team within twenty-four hours of discovery. Employees must not attempt to investigate or remediate a suspected breach on their own.\n\nAccess principles. Access to systems follows the principle of least privilege. Access rights are reviewed on a quarterly basis and revoked promptly when an employee changes role or leaves the company."
+    },
+    {
+      "doc_id": "kyc-aml-procedure",
+      "title": "KYC and Anti-Money-Laundering Procedure",
+      "department": "Compliance",
+      "sensitivity": "confidential",
+      "owner": "mlro",
+      "effective_date": "2025-03-01",
+      "text": "Overview. This confidential procedure governs customer due diligence and anti-money-laundering controls. It is restricted to the compliance function and approved executives.\n\nCustomer due diligence. Standard due diligence is performed on all new customers at onboarding. Enhanced due diligence is required for any customer or transaction exceeding USD 10,000, and for all politically exposed persons. Politically exposed persons must be screened against sanctions and watch lists at onboarding and re-screened annually.\n\nRisk tiers. Customers are assigned a risk tier of low, medium, or high. High-risk customers are subject to a review every quarter, while low and medium risk customers are reviewed annually.\n\nSuspicious activity. Any suspected suspicious activity must be escalated to the Money Laundering Reporting Officer. A suspicious activity report must be filed with the regulator within fifteen days of detection. Staff must not tip off a customer that a report has been filed."
+    },
+    {
+      "doc_id": "data-retention-standard",
+      "title": "Data Retention and Deletion Standard",
+      "department": "Legal",
+      "sensitivity": "internal",
+      "owner": "dpo",
+      "effective_date": "2025-01-20",
+      "text": "Purpose. This standard defines how long different categories of data are retained and when they must be deleted.\n\nRetention periods. Financial and accounting records are retained for seven years to meet regulatory obligations. Business email is retained for three years. Security and system audit logs are retained for twelve months.\n\nCustomer data. Customer personally identifiable information is deleted ninety days after an account is closed, unless a longer retention period is required by law or an active legal hold. Marketing contact data is deleted upon request or after two years of inactivity.\n\nBackups. System backups are retained for twelve months on a rolling basis. Deletion requests are applied to primary systems immediately and propagate to backups at the next scheduled backup rotation.\n\nLegal holds. When a legal hold is issued, all deletion for the affected records is suspended until the hold is formally released by the legal department."
+    },
+    {
+      "doc_id": "vendor-onboarding-sop",
+      "title": "Vendor Onboarding Standard Operating Procedure",
+      "department": "Procurement",
+      "sensitivity": "internal",
+      "owner": "head-procurement",
+      "effective_date": "2025-04-01",
+      "text": "Purpose. This procedure describes the steps required to onboard a new vendor or supplier.\n\nRequired documentation. Every vendor must provide a completed tax form and valid banking details before any purchase order is issued. Vendors that will process or store company or customer data must additionally complete the information security questionnaire and pass a security review.\n\nApprovals. Vendor contracts with a total value above USD 50,000 require dual approval from both the department head and the finance director. All contracts must be reviewed by the legal department before signature.\n\nData access. A vendor that requires access to production systems or customer data must be sponsored by an internal owner, and the access must be approved by the Chief Information Security Officer. Access is granted on a least-privilege basis and expires at the end of the contract term.\n\nService levels. The target onboarding time is ten business days from receipt of complete documentation. Delays caused by incomplete security questionnaires are the most common cause of missed onboarding targets."
+    },
+    {
+      "doc_id": "q3-financial-summary",
+      "title": "Q3 2025 Financial Summary",
+      "department": "Finance",
+      "sensitivity": "confidential",
+      "owner": "cfo",
+      "effective_date": "2025-10-15",
+      "text": "Confidential. This summary contains non-public financial information and is restricted to finance leadership and executives.\n\nRevenue. Third-quarter revenue was USD 42.5 million, an increase of eighteen percent year over year. Growth was driven primarily by expansion in the enterprise segment.\n\nProfitability. Operating margin for the quarter was twenty-two percent. Total operating expenses were USD 33.1 million, up from USD 29.4 million in the same quarter last year.\n\nBalance sheet. Cash and cash equivalents stood at USD 120 million at quarter end. The company holds no long-term debt.\n\nHeadcount. Total headcount at the end of the quarter was 850 employees, a net increase of 60 from the prior quarter, with most hiring in engineering and sales."
+    },
+    {
+      "doc_id": "access-control-matrix",
+      "title": "Access Control Matrix",
+      "department": "IT Security",
+      "sensitivity": "confidential",
+      "owner": "ciso",
+      "effective_date": "2025-05-01",
+      "text": "Confidential. This matrix defines which roles may access which systems and is restricted to IT security and executives.\n\nRole-based access. Access is granted by role, not by individual. Finance systems may be accessed only by members of the Finance department and by executives. Human resources systems may be accessed only by the HR department and executives.\n\nProduction systems. Access to production databases requires explicit approval from the Chief Information Security Officer and is granted only for the duration of a specific task. Standing production access is not permitted.\n\nPrivilege principles. All access follows least privilege. Administrative privileges are separated from normal user accounts. Every access grant is logged.\n\nReviews. Access rights are reviewed quarterly by system owners. Any access that is no longer justified by the user's current role is revoked at the review."
+    },
+    {
+      "doc_id": "code-of-conduct",
+      "title": "Employee Code of Conduct",
+      "department": "HR",
+      "sensitivity": "public",
+      "owner": "chro",
+      "effective_date": "2024-12-01",
+      "text": "Introduction. The code of conduct sets out the standards of behaviour expected of every employee.\n\nIntegrity. Employees must act honestly and avoid any conflict of interest between personal interests and company duties. Any potential conflict must be disclosed to a manager.\n\nAnti-bribery. Offering or accepting bribes or improper payments is strictly prohibited. Gifts above a nominal value must be declared to the compliance team.\n\nRespectful workplace. The company does not tolerate harassment or discrimination of any kind. All employees are expected to treat colleagues, customers, and partners with respect.\n\nRaising concerns. Suspected violations of this code should be reported to a manager or through the confidential ethics hotline. The company prohibits retaliation against anyone who raises a concern in good faith."
+    },
+    {
+      "doc_id": "remote-work-policy",
+      "title": "Remote Work Policy",
+      "department": "HR",
+      "sensitivity": "public",
+      "owner": "chro",
+      "effective_date": "2025-01-10",
+      "text": "Purpose. This policy describes the arrangements for working remotely.\n\nEligibility and schedule. Employees in eligible roles may work remotely for up to three days per week. Core collaboration hours, during which employees should be available, are ten in the morning to four in the afternoon local time.\n\nHome office support. The company provides a home office stipend of USD 500 per year to cover equipment and connectivity. Receipts are required for stipend reimbursement.\n\nSecurity. Employees working remotely must connect through the company virtual private network when accessing internal systems and must follow the information security policy at all times.\n\nManager discretion. Remote arrangements are subject to manager approval and may be adjusted based on business needs and individual performance."
+    },
+    {
+      "doc_id": "incident-response-plan",
+      "title": "Security Incident Response Plan",
+      "department": "IT Security",
+      "sensitivity": "internal",
+      "owner": "ciso",
+      "effective_date": "2025-06-01",
+      "text": "Purpose. This plan defines how the company responds to security incidents.\n\nSeverity levels. Incidents are classified as SEV1, SEV2, or SEV3. SEV1 denotes a critical incident such as an active breach or a major outage. SEV2 denotes a significant but contained issue. SEV3 denotes a minor issue with limited impact.\n\nResponse times. A SEV1 incident must receive a response within one hour of declaration, at any time of day. SEV2 incidents are addressed within one business day and SEV3 within three business days.\n\nRoles. Each declared incident has an assigned incident commander who coordinates the response and communication. Technical responders report to the incident commander.\n\nAfter the incident. A written post-mortem is completed within five business days of resolution. If customer data is affected, impacted customers must be notified within seventy-two hours in line with regulatory requirements."
+    }
+  ]
+}

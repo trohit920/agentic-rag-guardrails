@@ -1,0 +1,23 @@
+{
+  "models": {
+    "qwen2.5-1.5b-fp16": {
+      "n_answered": 11,
+      "mean_token_f1": 0.4199,
+      "mean_faithfulness": 1.0,
+      "abstention_accuracy": 0.9375,
+      "median_latency_s": 1.912,
+      "mean_tokens_per_s": 9.3,
+      "peak_vram_gb": 3.35
+    },
+    "phi-3-mini-4bit": {
+      "n_answered": 12,
+      "mean_token_f1": 0.3402,
+      "mean_faithfulness": 1.0,
+      "abstention_accuracy": 1.0,
+      "median_latency_s": 3.203,
+      "mean_tokens_per_s": 6.4,
+      "peak_vram_gb": 2.94
+    }
+  },
+  "recommendation": "qwen2.5-1.5b-fp16 is recommended: it leads on answer quality and has the lowest median latency (1.912s). phi-3-mini-4bit uses less VRAM (2.94 GB) and a higher abstention rate, so it may suit tighter memory or stricter-refusal deployments."
+}

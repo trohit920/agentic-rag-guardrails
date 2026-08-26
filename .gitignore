@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Local vector-store caches (regenerated; binary, not committed)
+outputs/chroma/
+outputs/chroma_*/
+.tmp/
+
+# Note: outputs/*.json and outputs/figures/*.png ARE committed as result artifacts
+# so the repository is self-documenting without a rerun.
+
+# Secrets
+.env
+
+# Notebook checkpoints
+.ipynb_checkpoints/
