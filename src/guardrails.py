@@ -2,7 +2,8 @@
 
 Three defenses, all local: (1) a prompt-injection detector combining rule patterns
 with embedding similarity to a known-attack set; (2) NLI-based groundedness that
-scores each answer sentence for entailment against the retrieved context (reusing
+scores each answer sentence for entailment against the chunks it cites, or the
+whole retrieved context when it cites none (reusing
 the DeBERTa NLI model from my llm-uncertainty-quantification project); (3) semantic-entropy abstention that flags
 confident-but-wrong answers by clustering stochastic samples into meanings. These
 implement the hallucination-handling, guardrail, and prompt-injection requirements.
@@ -19,6 +20,7 @@ from .config import (
     ABSTENTION_ENTROPY_MAX,
     EPS,
     GROUNDEDNESS_ACCEPT_RATIO,
+    GROUNDEDNESS_CITED_ONLY,
     GROUNDEDNESS_ENTAILMENT_MIN,
     GROUNDEDNESS_SIM_MIN,
     INJECTION_SIMILARITY_MAX,
@@ -28,7 +30,11 @@ from .embeddings import Embedder
 from .schemas import GroundednessReport, GuardVerdict, RetrievalResult
 
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
-_CITATION_RE = re.compile(r"\[\d+\]")
+# A citation marker: [2], [1, 3], [1-3] or [ 2 ]; _CITATION_PART_RE reads its parts.
+_CITATION_RE = re.compile(r"\[\s*\d+(?:\s*[-,]\s*\d+)*\s*\]")
+_CITATION_PART_RE = re.compile(r"(\d+)(?:\s*-\s*(\d+))?")
+# Cap on how many chunks one range marker may name, so "[1-99999]" stays cheap.
+_MAX_CITATION_RANGE = 50
 
 ATTACK_PATTERNS: tuple[str, ...] = (
     r"ignore\s+(all\s+|any\s+)?(previous|prior|above)\s+instructions",
@@ -59,23 +65,111 @@ def _softmax(logits: np.ndarray) -> np.ndarray:
     return exp / exp.sum(axis=1, keepdims=True)
 
 
+def _citation_indices(marker: str) -> set[int]:
+    """0-based chunk indices named by one marker: [2], [1, 3] or a range [1-3]."""
+    indices: set[int] = set()
+    for part in _CITATION_PART_RE.finditer(marker):
+        first = int(part.group(1))
+        last = int(part.group(2)) if part.group(2) else first
+        if last - first > _MAX_CITATION_RANGE:
+            last = first + _MAX_CITATION_RANGE
+        indices.update(number - 1 for number in range(first, last + 1))
+    return indices
+
+
+def _split_cited_sentences(text: str) -> list[tuple[str, frozenset[int]]]:
+    """Split an answer into sentences, each paired with the 0-based chunk indices it cites.
+
+    Markers are stripped before splitting (so "fact.[1] Next" still splits) and each
+    marker goes to the sentence it sits in; one that falls between sentences or
+    opens one ("fact. [1] Next") belongs to the sentence before it. Fragments under
+    two words are dropped, and their markers move to the next kept sentence, or
+    the previous one when none follows.
+    """
+    cleaned_parts: list[str] = []
+    marker_positions: list[tuple[int, set[int]]] = []
+    cursor, length = 0, 0
+    for match in _CITATION_RE.finditer(text):
+        cleaned_parts.append(text[cursor : match.start()])
+        length += match.start() - cursor
+        marker_positions.append((length, _citation_indices(match.group())))
+        cursor = match.end()
+    cleaned_parts.append(text[cursor:])
+    cleaned = "".join(cleaned_parts)
+    starts = [0] + [m.end() for m in _SENTENCE_SPLIT.finditer(cleaned)]
+    pieces = _SENTENCE_SPLIT.split(cleaned)
+    cites: list[set[int]] = [set() for _ in pieces]
+    for position, indices in marker_positions:
+        owner = max((i for i, start in enumerate(starts) if start < position), default=0)
+        cites[owner] |= indices
+    texts = [" ".join(piece.split()) for piece in pieces]
+    kept = [i for i, piece in enumerate(texts) if len(piece.split()) >= 2]
+    for i, indices in enumerate(cites):
+        if indices and i not in kept and kept:
+            later = [k for k in kept if k > i]
+            cites[later[0] if later else kept[-1]] |= indices
+    return [(texts[i], frozenset(cites[i])) for i in kept]
+
+
 def _split_sentences(text: str) -> list[str]:
     """Split answer text into meaningful sentences, stripping citation markers."""
-    cleaned = _CITATION_RE.sub("", text).strip()
-    return [s.strip() for s in _SENTENCE_SPLIT.split(cleaned) if len(s.split()) >= 2]
+    return [sentence for sentence, _ in _split_cited_sentences(text)]
 
 
-def _premise_sentences(context: list[RetrievalResult]) -> list[str]:
-    """Flatten retrieved chunks into individual premise sentences.
+def _premise_sentences(context: list[RetrievalResult]) -> tuple[list[str], list[int]]:
+    """Flatten retrieved chunks into premise sentences and the chunk index of each.
 
     NLI entailment is unreliable when the premise is a long multi-sentence chunk,
     so groundedness is scored at sentence granularity (SummaC-style): each answer
-    sentence is checked against every context sentence and the best match is kept.
+    sentence is checked against context sentences and the best match is kept.
     """
     sentences: list[str] = []
-    for result in context:
-        sentences.extend(s.strip() for s in _SENTENCE_SPLIT.split(result.chunk.text) if s.strip())
-    return sentences
+    sources: list[int] = []
+    for index, result in enumerate(context):
+        for sentence in _SENTENCE_SPLIT.split(result.chunk.text):
+            if sentence.strip():
+                sentences.append(sentence.strip())
+                sources.append(index)
+    return sentences, sources
+
+
+def _premise_mask(
+    cited: list[frozenset[int]], sources: list[int], num_chunks: int, cited_only: bool
+) -> np.ndarray:
+    """Boolean [answer sentences, premises] mask of the premises each sentence may match.
+
+    With cited_only, a sentence that cites chunks may only match sentences from
+    those chunks, and one that cites any chunk outside the num_chunks retrieved
+    matches nothing and so fails. Uncited sentences, or cited_only=False, use all
+    premises.
+    """
+    source_array = np.asarray(sources, dtype=int)
+
+    def row(c: frozenset[int]) -> np.ndarray:
+        if not cited_only or not c:
+            return np.ones(len(sources), dtype=bool)
+        if any(index < 0 or index >= num_chunks for index in c):
+            return np.zeros(len(sources), dtype=bool)
+        return np.isin(source_array, sorted(c))
+
+    rows = [row(c) for c in cited]
+    return np.vstack(rows) if rows else np.zeros((0, len(sources)), dtype=bool)
+
+
+def _supported_sentences(
+    entail: np.ndarray,
+    mask: np.ndarray,
+    entailment_min: float,
+    similarity: np.ndarray | None = None,
+    sim_min: float = GROUNDEDNESS_SIM_MIN,
+) -> np.ndarray:
+    """Per-sentence support: best allowed entailment, or best allowed cosine, clears its bar."""
+    best_entail = np.where(mask, entail, 0.0).max(axis=1, initial=0.0)
+    supported = best_entail >= entailment_min
+    if similarity is not None:
+        best_sim = np.where(mask, similarity, -np.inf).max(axis=1, initial=-np.inf)
+        supported = supported | (best_sim >= sim_min)
+    return supported
 
 
 class InjectionGuard:
@@ -127,27 +221,36 @@ class GroundednessGuard:
         answer: str,
         context: list[RetrievalResult],
         entailment_min: float = GROUNDEDNESS_ENTAILMENT_MIN,
+        cited_only: bool = GROUNDEDNESS_CITED_ONLY,
     ) -> GroundednessReport:
-        """Return the fraction of answer sentences entailed by the context."""
-        sentences = _split_sentences(answer)
-        premises = _premise_sentences(context)
+        """Return the fraction of answer sentences entailed by the context.
+
+        `context` must be in the same order the agent numbered it, since [n]
+        markers are resolved against it. cited_only (default True) limits each
+        cited sentence to its cited chunks; see _premise_mask.
+        """
+        cited_sentences = _split_cited_sentences(answer)
+        sentences = [sentence for sentence, _ in cited_sentences]
+        premises, sources = _premise_sentences(context)
         if not sentences or not premises:
             return GroundednessReport(0.0, 0, len(sentences), sentences)
+        mask = _premise_mask(
+            [cited for _, cited in cited_sentences], sources, len(context), cited_only
+        )
         pairs = [(premise, sentence) for sentence in sentences for premise in premises]
         logits = np.asarray(self.model.predict(pairs, show_progress_bar=False))
         entail = _softmax(logits)[:, self._entail_idx].reshape(len(sentences), len(premises))
-        supported_mask = entail.max(axis=1) >= entailment_min
-        if self.embedder is not None:
-            supported_mask = supported_mask | (self._max_similarity(sentences, premises) >= self.sim_min)
+        similarity = self._similarity(sentences, premises) if self.embedder is not None else None
+        supported_mask = _supported_sentences(entail, mask, entailment_min, similarity, self.sim_min)
         supported = int(supported_mask.sum())
         ungrounded = [sentences[i] for i in range(len(sentences)) if not supported_mask[i]]
         return GroundednessReport(supported / len(sentences), supported, len(sentences), ungrounded)
 
-    def _max_similarity(self, sentences: list[str], premises: list[str]) -> np.ndarray:
-        """Per-answer-sentence max embedding cosine against the premise sentences."""
+    def _similarity(self, sentences: list[str], premises: list[str]) -> np.ndarray:
+        """Embedding cosine matrix [answer sentences, premise sentences]."""
         sentence_vectors = self.embedder.encode_documents(sentences)
         premise_vectors = self.embedder.encode_documents(premises)
-        return (sentence_vectors @ premise_vectors.T).max(axis=1)
+        return sentence_vectors @ premise_vectors.T
 
     def verdict(
         self, report: GroundednessReport, accept_ratio: float = GROUNDEDNESS_ACCEPT_RATIO

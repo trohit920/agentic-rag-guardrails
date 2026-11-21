@@ -84,6 +84,10 @@ GROUNDEDNESS_ACCEPT_RATIO: float = 0.60
 # Embedding cosine above this also counts a sentence as grounded (paraphrase
 # rescue for the NLI model, which returns neutral for many valid restatements).
 GROUNDEDNESS_SIM_MIN: float = 0.75
+# Check each cited answer sentence only against the chunks it cites, so a claim
+# that is true somewhere in the context but cites the wrong chunk is not grounded.
+# Uncited sentences still fall back to the whole retrieved context.
+GROUNDEDNESS_CITED_ONLY: bool = True
 # Semantic-entropy above this (nats) triggers abstention (confident-but-wrong).
 ABSTENTION_ENTROPY_MAX: float = 1.10
 # Prompt-injection similarity threshold vs known-attack corpus.

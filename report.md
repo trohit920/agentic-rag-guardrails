@@ -130,6 +130,16 @@ dequantization overhead makes Phi-3 slower here despite its smaller footprint.
   (max 0.79), so no threshold separates them without dropping legitimate answers.
   This is a genuine open problem (answer relevance vs mere groundedness), left as
   documented future work rather than papered over with a fragile constant.
+- **Wrong-chunk citations (fixed after the eval).** Groundedness was originally
+  checked against all retrieved text, so a sentence that was true somewhere in the
+  context but cited the wrong chunk still passed. Each cited sentence is now
+  checked only against the chunks it cites (`GROUNDEDNESS_CITED_ONLY`); citing any
+  chunk that was not retrieved fails the sentence. Uncited sentences still fall back to the
+  whole context. On a two-chunk check with the real NLI and embedding models, a
+  correct sentence citing the wrong chunk now scores 0.00 instead of 1.00, while
+  the same sentence citing the right chunk stays at 1.00. The eval numbers above
+  predate this change and have not been rerun. It does not fix the
+  grounded-but-irrelevant case: there the cited chunk does support the sentence.
 - **Small corpus saturates retrieval metrics.** Differences between chunking/search
   strategies are compressed; a larger corpus is needed to rank them meaningfully.
 - **token-F1 undersells verbose answers.** A judge-free semantic answer-correctness
